@@ -23,6 +23,7 @@ export default defineComponent({
 </script>
 <style lang="less" module>
 .container {
+  padding: 16px;
   .button {
     color: #409EFF;
     cursor: pointer;

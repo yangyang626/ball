@@ -10,13 +10,15 @@
           <div style="text-align: center;">
             {{ item.name }}
           </div>
-          <div :class="$style['flex-center']">
+          <div :class="$style['flex-center']"
+          :style="setStyle(item)"
+          >
             <div
               v-for="child in item.children"
               :key="child.key || child.slot"
               :style="setStyle(child)"
             >
-              {{ child.name }}
+                {{ child.name }}
             </div>
           </div>
         </div>
@@ -29,32 +31,54 @@
       </template>
     </div>
     <div :class="$style['tbody']">
-      <div v-for="item in data" :key="item.id">
-        <div v-for="col in columns" :key="col.key || col.slot" :style="setStyle(col)">
-          <div v-if="col.children && col.children.length" :class="$style['table-child']">
+      <div
+        v-for="item in data"
+        :key="item.id"
+        :style="{
+          background: item.bgColor ? item.bgColor : undefined,
+        }"
+      >
+        <div
+          v-for="col in columns"
+          :key="col.key || col.slot"
+          :style="setStyle(col)"
+        >
+          <div
+            v-if="col.children && col.children.length"
+            :class="$style['table-child']"
+          >
             <div
               v-for="child in col.children"
               :key="child.key || child.slot"
               :style="setStyle(child)"
-              
             >
-              <div v-if="child.key" :style="setStyle(child)">
+              <div v-if="child.key" class="child" :style="setHeight(item, item[child.key])">
                 {{ item[child.key] }}
               </div>
-              <template v-else-if="child.slot" :default="scope">
+              <template v-else-if="child.slot">
                 <slot
                   :name="child.slot"
-                  :row="scope"
-                  :style="setStyle(child)"
+                  :row="item"
+                  class="slot"
+                  :style="setHeight(item, item[child.key])"
                 ></slot>
               </template>
             </div>
           </div>
-          <div v-else-if="col.key" >
-            {{ item[col.key] }}
+          <div v-else-if="col.key">
+            <div v-if="checkRow(item[col.key])" :class="$style['border-bottom']">
+              <div v-for="(v, i) in item[col.key]" :key="`${v}-${i}`" :style="setHeight(item, item[col.key])">
+                {{ v }}
+              </div>
+            </div>
+            <div v-else :style="setHeight(item, item[col.key])">
+              {{ item[col.key] }}
+            </div>
           </div>
           <template v-else-if="col.slot">
-            <slot :name="col.slot" :row="item"></slot>
+            <div :style="setHeight(item, '')">
+              <slot :name="col.slot" :row="item" ></slot>
+            </div>
           </template>
         </div>
       </div>
@@ -90,6 +114,7 @@ export default defineComponent({
   }
   .theader {
     .flex-center;
+    background-color: #f0f0f0;
     & > div {
       border: 1px solid #dddddd;
       height: @header-height;
@@ -121,8 +146,8 @@ export default defineComponent({
       & > div {
         border: 1px solid #dddddd;
         border-top: 0;
-        height: @body-height;
-        line-height: @body-height;
+        // height: @body-height;
+        // line-height: @body-height;
         text-align: center;
         margin-right: -1px;
         box-sizing: border-box;
@@ -131,17 +156,22 @@ export default defineComponent({
         display: flex;
         align-items: center;
         .flex-center;
-      & > div {
-        border-right: 1px solid #dddddd;
-        height: @body-height;
-        line-height: @body-height;
-        text-align: center;
-        margin-right: -1px;
-        box-sizing: border-box;
-        &:nth-last-child(1) {
+        & > div {
+          border-right: 1px solid #dddddd;
+          text-align: center;
+          // height: @body-height;
+          // line-height: @body-height;
+          margin-right: -1px;
+          box-sizing: border-box;
+          &:nth-last-child(1) {
             border-right: 0;
+          }
         }
       }
+    }
+    .border-bottom {
+      & > div:nth-child(1) {
+        border-bottom: 1px solid #dddddd;
       }
     }
   }
